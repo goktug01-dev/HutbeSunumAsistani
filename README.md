@@ -1,5 +1,10 @@
 # 🕌 Hutbe Sunum Asistanı
 
+<p align="center">
+  <img src="screenshots/arayuz.png" width="850">
+</p>
+
+
 Hutbe Sunum Asistanı, Diyanet İşleri Başkanlığı tarafından yayımlanan cuma hutbelerini otomatik olarak PowerPoint sunumuna dönüştürmek amacıyla geliştirilmiş bir Windows masaüstü uygulamasıdır.
 
 Bu uygulama sayesinde hutbe metni manuel olarak kopyalanıp slaytlara yerleştirilmez. Kullanıcı yalnızca PDF dosyasını seçer ve tek tıkla sunum oluşturabilir.
