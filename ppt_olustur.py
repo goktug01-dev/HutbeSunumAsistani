@@ -572,7 +572,7 @@ def sunum_olustur(metin, cikti=None):
 
     giris_gorselleri = klasordeki_gorselleri_bul(
         giris_klasoru,
-        {".png"},
+        {".png", ".jpg", ".jpeg"},
     )
 
     cikis_gorselleri = klasordeki_gorselleri_bul(
