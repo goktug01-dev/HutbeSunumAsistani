@@ -1,0 +1,20 @@
+[theme]
+base = "light"
+primaryColor = "#1F3D30"
+backgroundColor = "#FBF6EA"
+secondaryBackgroundColor = "#F5ECD7"
+textColor = "#2A241B"
+borderColor = "#DCC796"
+baseRadius = "0.5rem"
+baseFontSize = 18
+font = "'Atkinson Hyperlegible Next':https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600&display=swap, sans-serif"
+headingFont = "Alegreya:https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,700;1,500&display=swap, serif"
+
+[client]
+toolbarMode = "minimal"
+
+[server]
+maxUploadSize = 50
+
+[browser]
+gatherUsageStats = false

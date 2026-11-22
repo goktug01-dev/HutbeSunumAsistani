@@ -3,6 +3,14 @@ import re
 import pdfplumber
 
 
+# pdf_metnini_oku sonrası Arapça metin burada tutulur.
+# sunum_olustur bu değeri okuyup sıfırlar (arayuz imzası değişmez).
+son_arapca_metin = ""
+
+# Son okunan PDF yolu (Arapça alanı görsel kırpmak için).
+son_pdf_yolu = ""
+
+
 def arapca_harf_mi(karakter):
     return (
         "\u0600" <= karakter <= "\u06ff"
@@ -15,6 +23,31 @@ def arapca_harf_mi(karakter):
 
 def arapca_iceriyor_mu(metin):
     return any(arapca_harf_mi(karakter) for karakter in metin)
+
+
+HITAPLAR = (
+    "Aziz Müminler!",
+    "Aziz Müslümanlar!",
+    "Kıymetli Müslümanlar!",
+    "Kıymetli Müminler!",
+    "Kıymetli Kardeşlerim!",
+    "Değerli Müminler!",
+    "Değerli Müslümanlar!",
+    "Değerli Kardeşlerim!",
+    "Muhterem Müslümanlar!",
+)
+
+
+def baslik_ve_hitabi_ayir(satir):
+    """Aynı satırdaki hutbe başlığını hitaptan ayırır."""
+    for hitap in HITAPLAR:
+        konum = satir.find(hitap)
+        if konum > 0:
+            baslik = satir[:konum].strip()
+            kalan = satir[konum:].strip()
+            if baslik and kalan:
+                return [baslik, kalan]
+    return [satir]
 
 
 def gereksiz_satir_mi(satir):
@@ -33,10 +66,6 @@ def gereksiz_satir_mi(satir):
         return True
 
     if "diyanet işleri başkanlığı" in kucuk:
-        return True
-
-    # Arapça içeren satırlar
-    if arapca_iceriyor_mu(satir):
         return True
 
     # Tek başına dipnot veya sayfa numarası
@@ -86,12 +115,21 @@ def sutunu_oku(sutun):
     )
 
     if not metin:
-        return []
+        return [], []
 
     temiz_satirlar = []
+    arapca_satirlar = []
 
     for satir in metin.splitlines():
         satir = " ".join(satir.split()).strip()
+
+        if not satir:
+            continue
+
+        # Arapça satırları silme; ayrı listede topla.
+        if arapca_iceriyor_mu(satir):
+            arapca_satirlar.append(satir)
+            continue
 
         if gereksiz_satir_mi(satir):
             continue
@@ -99,13 +137,19 @@ def sutunu_oku(sutun):
         satir = dipnot_numaralarini_temizle(satir)
 
         if satir:
-            temiz_satirlar.append(satir)
+            # Başlık ile hitap aynı satırdaysa ayrı tut.
+            temiz_satirlar.extend(baslik_ve_hitabi_ayir(satir))
 
-    return temiz_satirlar
+    return temiz_satirlar, arapca_satirlar
 
 
 def pdf_metnini_oku(pdf_yolu):
+    global son_arapca_metin, son_pdf_yolu
+
+    son_pdf_yolu = str(pdf_yolu)
+
     tum_satirlar = []
+    tum_arapca_satirlar = []
 
     with pdfplumber.open(pdf_yolu) as pdf:
         for sayfa in pdf.pages:
@@ -131,10 +175,16 @@ def pdf_metnini_oku(pdf_yolu):
                 )
             )
 
-            tum_satirlar.extend(sutunu_oku(sol_sutun))
-            tum_satirlar.extend(sutunu_oku(sag_sutun))
+            turkce_satirlar, arapca_satirlar = sutunu_oku(sol_sutun)
+            tum_satirlar.extend(turkce_satirlar)
+            tum_arapca_satirlar.extend(arapca_satirlar)
+
+            turkce_satirlar, arapca_satirlar = sutunu_oku(sag_sutun)
+            tum_satirlar.extend(turkce_satirlar)
+            tum_arapca_satirlar.extend(arapca_satirlar)
 
     tum_metin = "\n".join(tum_satirlar).strip()
+    son_arapca_metin = "\n".join(tum_arapca_satirlar).strip()
 
     if not tum_metin:
         raise ValueError(
